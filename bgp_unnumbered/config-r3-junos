@@ -1,0 +1,50 @@
+interfaces {
+    ge-0/0/0 {
+        unit 0 {
+            family inet6;
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 10.255.0.2/32;
+            }
+        }
+    }
+}
+policy-options {
+    as-list ALL_ASN members 1-4294967295;
+}
+routing-options {
+    router-id 10.255.0.2;
+    autonomous-system 65002;
+}
+protocols {
+    router-advertisement {
+        interface ge-0/0/0.0;
+    }
+    bgp {
+        group UPLINK {
+            family inet {
+                unicast {
+                    extended-nexthop;
+                }
+            }
+            family inet6 {
+                unicast;
+            }
+            dynamic-neighbor UPLINK {
+                peer-auto-discovery {
+                    family inet6 {
+                        ipv6-nd;
+                    }
+                    interface ge-0/0/0.0;
+                }
+            }
+            peer-as-list ALL_ASN;
+        }
+    }
+    lldp {
+        interface all;
+    }
+}

@@ -1,0 +1,72 @@
+! Startup-config last modified at Tue Nov 26 16:32:33 2024 by root
+! device: r2 (cEOSLab, EOS-4.32.1F-37313256.4321F (engineering build))
+!
+no aaa root
+!
+username admin privilege 15 role network-admin secret sha512 $6$6yzC2mPvynFpwnB8$7ifo4DVdfAIX7klQJ3A1YQugo28DanodtxRAypqsrK3C6YsQV3UlyHfRr55xLk6qJAgXl950aa6lcOSIUdHFj.
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname r2
+!
+spanning-tree mode mstp
+!
+system l1
+   unsupported speed action error
+   unsupported error-correction action error
+!
+vrf instance MGMT
+!
+management api http-commands
+   no shutdown
+   !
+   vrf MGMT
+      no shutdown
+!
+management api gnmi
+   transport grpc default
+      vrf MGMT
+!
+management api netconf
+   transport ssh default
+      vrf MGMT
+!
+interface Ethernet1
+   no switchport
+   ipv6 enable
+!
+interface Loopback0
+   ip address 10.255.0.1/32
+!
+interface Management0
+   vrf MGMT
+!
+ip routing ipv6 interfaces
+no ip routing vrf MGMT
+!
+ipv6 unicast-routing
+!
+ip route vrf MGMT 0.0.0.0/0 {{ .MgmtIPv4Gateway }}
+!
+ipv6 route vrf MGMT ::/0 {{ .MgmtIPv6Gateway }}
+!
+peer-filter ACCEPT_ALL_ASN
+   10 match as-range 1-4294967295 result accept
+!
+router bgp 65001
+   router-id 10.255.0.1
+   bgp default ipv4-unicast transport ipv6
+   neighbor UPLINK peer group
+   neighbor interface Et1 peer-group UPLINK peer-filter ACCEPT_ALL_ASN
+   !
+   address-family ipv4
+      neighbor UPLINK activate
+      neighbor UPLINK next-hop address-family ipv6 originate
+      network 10.255.0.1/32
+   !
+   address-family ipv6
+      neighbor UPLINK activate
+!
+end

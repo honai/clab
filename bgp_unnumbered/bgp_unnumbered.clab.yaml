@@ -1,0 +1,23 @@
+name: bgp_unnumbered
+
+topology:
+  kinds:
+    ceos:
+      image: ceos:4.32.1f
+      env:
+        CLAB_MGMT_VRF: MGMT
+    juniper_vjunosrouter:
+      image: juniper_vjunos-router:23.2r1.15
+  nodes:
+    r1:
+      kind: ceos
+      startup-config: config-r1-eos
+    r2:
+      kind: ceos
+      startup-config: config-r2-eos
+    r3:
+      kind: juniper_vjunosrouter
+      startup-config: config-r3-junos
+  links:
+  - endpoints: ["r1:eth1", "r2:eth1"]
+  - endpoints: ["r1:eth2", "r3:ge-0/0/0"]
